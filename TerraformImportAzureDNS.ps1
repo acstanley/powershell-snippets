@@ -27,7 +27,12 @@ foreach ($dns_zone_resource in $dns_zone_resources) {
 
         if (!$skip) {
             Write-Host Importing record: $dns_record.Name $dns_record.ZoneName $dns_record.RecordType
-            terraform import azurerm_dns_$($dns_record.RecordType.ToString().ToLower())_record.$($dns_record.RecordType.ToString().ToLower())_$($subdomain)$($dns_record.ZoneName.Replace(".", "_")) $dns_record.Id.Replace("dnszones", "dnsZones")
+            $tfout = terraform import azurerm_dns_$($dns_record.RecordType.ToString().ToLower())_record.$($dns_record.RecordType.ToString().ToLower())_$($subdomain)$($dns_record.ZoneName.Replace(".", "_")) $dns_record.Id.Replace("dnszones", "dnsZones") *>&1 
+            if ($tfout -like "*Terraform is already managing a remote object for*") {
+                Write-Host "Already managing object for record:" $dns_record.Name $dns_record.ZoneName $dns_record.RecordType
+            } else {
+                Write-Host $tfout
+            }
         }
         $skip = $false
     }   
