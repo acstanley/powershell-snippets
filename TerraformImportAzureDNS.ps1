@@ -9,7 +9,7 @@ $dns_zone_resources = Get-AzResource -Verbose | Where-Object { $_.ResourceType -
 
 foreach ($dns_zone_resource in $dns_zone_resources) {
     Write-Host Importing zone: $dns_zone_resource.Name
-    #terraform import azurerm_dns_zone.zone_$($dns_zone_resource.Name.Replace(".", "_")) $dns_zone_resource.ResourceId.Replace("dnszones", "dnsZones")
+    terraform import azurerm_dns_zone.zone_$($dns_zone_resource.Name.Replace(".", "_")) $dns_zone_resource.ResourceId.Replace("dnszones", "dnsZones")
     $dns_records = Get-AzDnsRecordSet -ResourceGroupName $dns_zone_resource.ResourceGroupName -ZoneName $dns_zone_resource.Name
     foreach ($dns_record in $dns_records) {
         if ($dns_record.Name -eq "@") {
