@@ -4,11 +4,12 @@
 
 Set-Location "C:\terraform-dir\"
 
+Get-AzResource -Verbose | Where-Object { $_.ResourceType -eq "Microsoft.Network/dnszones" }
 $dns_zone_resources = Get-AzResource -Verbose | Where-Object { $_.ResourceType -eq "Microsoft.Network/dnszones" }
 
 foreach ($dns_zone_resource in $dns_zone_resources) {
     Write-Host Importing zone: $dns_zone_resource.Name
-    terraform import azurerm_dns_zone.zone_$($dns_zone_resource.Name.Replace(".", "_")) $dns_zone_resource.ResourceId.Replace("dnszones", "dnsZones")
+    #terraform import azurerm_dns_zone.zone_$($dns_zone_resource.Name.Replace(".", "_")) $dns_zone_resource.ResourceId.Replace("dnszones", "dnsZones")
     $dns_records = Get-AzDnsRecordSet -ResourceGroupName $dns_zone_resource.ResourceGroupName -ZoneName $dns_zone_resource.Name
     foreach ($dns_record in $dns_records) {
         if ($dns_record.Name -eq "@") {
@@ -16,7 +17,7 @@ foreach ($dns_zone_resource in $dns_zone_resources) {
         } elseif ($dns_record.Name -eq "*") {
             $subdomain = "wildcard_"
         } else {
-            $subdomain = "$($dns_record.Name)_"
+            $subdomain = "$($dns_record.Name.Replace(".", "_"))_"
         }
 
         if ($dns_record.RecordType -eq "SOA" -or $dns_record.RecordType -eq "NS") {
